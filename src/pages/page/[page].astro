@@ -1,0 +1,35 @@
+---
+import type { GetStaticPaths } from 'astro';
+import Layout from '../../layouts/Layout.astro';
+import GameListPage from '../../components/GameListPage.astro';
+import PageHero from '../../components/PageHero.astro';
+import { getDatabase } from '../../lib/db';
+import { GAMES_PER_PAGE, getGameCount, getGamesPage } from '../../lib/games';
+
+export const prerender = true;
+
+export const getStaticPaths = (async () => {
+    const db = getDatabase();
+    const totalPages = Math.ceil(await getGameCount(db) / GAMES_PER_PAGE);
+
+    return Array.from({ length: Math.max(totalPages - 1, 0) }, (_, index) => {
+        const page = index + 2;
+        return { params: { page: String(page) } };
+    });
+}) satisfies GetStaticPaths;
+
+const page = Number(Astro.params.page);
+const db = getDatabase();
+const games = await getGamesPage(db, page, GAMES_PER_PAGE);
+const totalPages = Math.ceil(await getGameCount(db) / GAMES_PER_PAGE);
+---
+
+<Layout title={`Tailspin Toys - Games - Page ${page}`}>
+    <div class="py-8">
+        <PageHero
+            title="Welcome to Tailspin Toys"
+            subtitle="Find your next game! And maybe even back one! Explore our collection!"
+        />
+        <GameListPage games={games} currentPage={page} totalPages={totalPages} />
+    </div>
+</Layout>

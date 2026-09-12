@@ -5,6 +5,8 @@ import type { Database } from './db';
 import {
     getAllGames,
     getAllGameIds,
+    getGameCount,
+    getGamesPage,
     getGameById,
 } from './games';
 
@@ -50,6 +52,25 @@ describe('games data-access helpers', () => {
         const ids = await getAllGameIds(db);
         const all = await getAllGames(db);
         expect(ids).toEqual(all.map((g) => g.id));
+    });
+
+    it('returns a page of games ordered by title', async () => {
+        await seedGames(db, 5);
+
+        const page = await getGamesPage(db, 2, 2);
+
+        expect(page.map((game) => game.title)).toEqual(['Game 03', 'Game 04']);
+    });
+
+    it('returns the total game count', async () => {
+        await seedGames(db, 3);
+
+        expect(await getGameCount(db)).toBe(3);
+    });
+
+    it('rejects invalid pagination values', async () => {
+        await expect(getGamesPage(db, 0, 2)).rejects.toThrow('Page must be a positive integer.');
+        await expect(getGamesPage(db, 1, 0)).rejects.toThrow('Page size must be a positive integer.');
     });
 
     it('fetches a single game by id', async () => {

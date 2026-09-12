@@ -24,6 +24,29 @@ test.describe('Game Listing and Navigation', () => {
     });
   });
 
+  test('should navigate between paginated game list pages', async ({ page }) => {
+    await page.goto('/');
+
+    await expect(page.getByTestId('pagination-status')).toHaveText('Page 1 of 4');
+    await expect(page.getByTestId('game-card')).toHaveCount(6);
+
+    await page.getByTestId('pagination-next').click();
+    await expect(page).toHaveURL('/page/2');
+    await expect(page.getByTestId('pagination-status')).toHaveText('Page 2 of 4');
+    await expect(page.getByTestId('game-card')).toHaveCount(6);
+
+    await page.getByTestId('pagination-next').click();
+    await expect(page).toHaveURL('/page/3');
+    await expect(page.getByTestId('pagination-status')).toHaveText('Page 3 of 4');
+    await expect(page.getByTestId('game-card')).toHaveCount(6);
+
+    await page.getByTestId('pagination-next').click();
+    await expect(page).toHaveURL('/page/4');
+    await expect(page.getByTestId('pagination-status')).toHaveText('Page 4 of 4');
+    await expect(page.getByTestId('game-card')).toHaveCount(3);
+    await expect(page.getByTestId('pagination-next')).toHaveCount(0);
+  });
+
   test('should navigate to correct game details page when clicking on a game', async ({ page }) => {
     let gameId: string | null;
     let gameTitle: string | null;
